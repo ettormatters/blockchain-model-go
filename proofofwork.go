@@ -3,38 +3,41 @@ package main
 import (
 	"bytes"
 	"crypto/sha256"
-	"encoding/binary"
 	"fmt"
-	"log"
 	"math"
 	"math/big"
 )
 
 var (
-	target   big.Int
 	maxNonce = math.MaxInt64
 )
 
-const targetBits = 12
+const targetBits = 24
 
-func setTarget() {
-	targetBytes := make([]byte, 32)
-	numOfZeros := targetBits / 4
-	// why divided by four?
-	targetBytes[numOfZeros-1] = 1
-	//targetBytes[2] : 1 => 001000000000000000000000
-	//compare               000FFFFFF
-	target.SetBytes(targetBytes)
+// ProofOfWork represents a proof-of-work
+type ProofOfWork struct {
+	block  *Block
+	target *big.Int
 }
 
-func prepareData(block *Block, nonce int) []byte {
+// NewProofOfWork builds and returns a ProofOfWork
+func NewProofOfWork(b *Block) *ProofOfWork {
+	target := big.NewInt(1)
+	target.Lsh(target, uint(256-targetBits))
+
+	pow := &ProofOfWork{b, target}
+
+	return pow
+}
+
+func (pow *ProofOfWork) prepareData(nonce int) []byte {
 	data := bytes.Join(
 		[][]byte{
-			block.PrevBlockHash,
-			block.Data,
-			intToHex(block.Timestamp),
-			intToHex(int64(targetBits)),
-			intToHex(int64(nonce)),
+			pow.block.PrevBlockHash,
+			pow.block.Data,
+			IntToHex(pow.block.Timestamp),
+			IntToHex(int64(targetBits)),
+			IntToHex(int64(nonce)),
 		},
 		[]byte{},
 	)
@@ -42,32 +45,21 @@ func prepareData(block *Block, nonce int) []byte {
 	return data
 }
 
-func intToHex(num int64) []byte {
-	buff := new(bytes.Buffer)
-	err := binary.Write(buff, binary.BigEndian, num)
-	if err != nil {
-		log.Panic(err)
-	}
-
-	return buff.Bytes()
-}
-
-//Prove ...
-func Prove(block *Block) (int, []byte) {
-	setTarget()
+//Run performs a proof-of-work
+func (pow *ProofOfWork) Run() (int, []byte) {
 	var hashInt big.Int
 	var hash [32]byte
 	nonce := 0
 
-	fmt.Printf("Mining the block containing \"%s\"\n", block.Data)
+	fmt.Printf("Mining the block containing \"%s\"\n", pow.block.Data)
 	for nonce < maxNonce {
-		data := prepareData(block, nonce)
+		data := pow.prepareData(nonce)
 
 		hash = sha256.Sum256(data)
 		fmt.Printf("\r%x", hash)
 		hashInt.SetBytes(hash[:])
 
-		if hashInt.Cmp(&target) == -1 {
+		if hashInt.Cmp(pow.target) == -1 {
 			break
 		} else {
 			nonce++
@@ -78,16 +70,15 @@ func Prove(block *Block) (int, []byte) {
 	return nonce, hash[:]
 }
 
-// ConfirmProof ...
-func ConfirmProof(block *Block, nonce int) bool {
-	setTarget()
+// Validate validates block's PoW
+func (pow *ProofOfWork) Validate() bool {
 	var hashInt big.Int
 
-	data := prepareData(block, nonce)
+	data := pow.prepareData(pow.block.Nonce)
 	hash := sha256.Sum256(data)
 	hashInt.SetBytes(hash[:])
 
-	confirmation := hashInt.Cmp(&target) == -1
+	isValid := hashInt.Cmp(pow.target) == -1
 
-	return confirmation
+	return isValid
 }
