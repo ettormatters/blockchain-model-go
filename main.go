@@ -7,11 +7,16 @@ import (
 
 func main() {
 	bc := NewBlockchain()
+	defer bc.db.Close()
 
-	bc.AddBlock("Send 1 BTC to Ivan")
-	bc.AddBlock("Send 2 more BTC to Ivan")
+	// bc.AddBlock("Send 1 BTC to Ivan")
+	// bc.AddBlock("Send 2 more BTC to Ivan")
 
-	for _, block := range bc.blocks {
+	bci := bc.Iterator()
+
+	for {
+		block := bci.Next()
+
 		fmt.Printf("%s - %x\n", block.Data, block.Hash)
 		fmt.Printf("Prev. hash: %s\n", block.PrevBlockHash)
 		fmt.Printf("Data: %s\n", block.Data)
@@ -19,5 +24,9 @@ func main() {
 		pow := NewProofOfWork(block)
 		fmt.Printf("PoW: %s\n", strconv.FormatBool(pow.Validate()))
 		fmt.Println()
+
+		if len(block.PrevBlockHash) == 0 {
+			break
+		}
 	}
 }
