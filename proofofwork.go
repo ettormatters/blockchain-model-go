@@ -45,7 +45,7 @@ func (pow *ProofOfWork) prepareData(nonce int) []byte {
 	return data
 }
 
-//Run performs a proof-of-work
+// Run performs a proof-of-work
 func (pow *ProofOfWork) Run() (int, []byte) {
 	var hashInt big.Int
 	var hash [32]byte

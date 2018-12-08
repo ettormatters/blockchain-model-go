@@ -13,19 +13,19 @@ const dbFile = "blockchain.db"
 const blocksBucket = "blocks"
 const genesisCoinbaseData = "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks"
 
-//Blockchain keeps a sequence of Blocks
+// Blockchain implements interactions with a DB
 type Blockchain struct {
 	tip []byte
 	db  *bolt.DB
 }
 
-//BlockchainIterator is used to iterate over blockchain blocks
+// BlockchainIterator is used to iterate over blockchain blocks
 type BlockchainIterator struct {
 	currentHash []byte
 	db          *bolt.DB
 }
 
-//MineBlock saves provided data as a block in the blockchain
+// MineBlock mines a new block with the provided transactions
 func (bc *Blockchain) MineBlock(transactions []*Transaction) {
 	var lastHash []byte
 
@@ -60,7 +60,7 @@ func (bc *Blockchain) MineBlock(transactions []*Transaction) {
 	})
 }
 
-// FindUnspentTransactions returns a list of transactions containing unspent outputs for an address
+// FindUnspentTransactions returns a list of transactions containing unspent outputs
 func (bc *Blockchain) FindUnspentTransactions(address string) []Transaction {
 	var unspentTXs []Transaction
 	spentTXOs := make(map[string][]int)
@@ -106,7 +106,7 @@ func (bc *Blockchain) FindUnspentTransactions(address string) []Transaction {
 	return unspentTXs
 }
 
-// FindUTXO finds and returns unspend transaction outputs for the address
+// FindUTXO finds and returns all unspent transaction outputs
 func (bc *Blockchain) FindUTXO(address string) []TXOutput {
 	var UTXOs []TXOutput
 	unspentTransactions := bc.FindUnspentTransactions(address)
@@ -147,7 +147,7 @@ Work:
 	return accumulated, unspentOutputs
 }
 
-// Iterator returns iterator
+// Iterator returns a BlockchainIterat
 func (bc *Blockchain) Iterator() *BlockchainIterator {
 	bci := &BlockchainIterator{bc.tip, bc.db}
 
@@ -180,13 +180,13 @@ func dbExists() bool {
 		return false
 	}
 
-	return false
+	return true
 }
 
-//NewBlockchain creates a new blockchain with genesis Block
+// NewBlockchain creates a new Blockchain with genesis Block
 func NewBlockchain(address string) *Blockchain {
 	if dbExists() == false {
-		fmt.Println("No existing blockchain found. Create one first")
+		fmt.Println("No existing blockchain found. Create one first.")
 		os.Exit(1)
 	}
 

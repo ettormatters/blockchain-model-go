@@ -36,7 +36,7 @@ func (cli *CLI) printUsage() {
 	fmt.Println("  getbalance -address ADDRESS - Get balance of ADDRESS")
 	fmt.Println("  createblockchain -address ADDRESS - Create a blockchain and send genesis block reward to ADDRESS")
 	fmt.Println("  printchain - Print all the blocks of the blockchain")
-	fmt.Println("  send -from FROM -to TO -amount AMOUNT - send AMOUNT of coins from FROM address to TO")
+	fmt.Println("  send -from FROM -to TO -amount AMOUNT - Send AMOUNT of coins from FROM address to TO")
 }
 
 func (cli *CLI) validateArgs() {
@@ -47,7 +47,7 @@ func (cli *CLI) validateArgs() {
 }
 
 func (cli *CLI) printChain() {
-
+	// TODO: Fix this
 	bc := NewBlockchain("")
 	defer bc.db.Close()
 
@@ -77,7 +77,7 @@ func (cli *CLI) send(from, to string, amount int) {
 	fmt.Println("Success!")
 }
 
-// Run parses command line arguments and process commands
+// Run parses command line arguments and processes commands
 func (cli *CLI) Run() {
 	cli.validateArgs()
 
@@ -143,6 +143,7 @@ func (cli *CLI) Run() {
 			sendCmd.Usage()
 			os.Exit(1)
 		}
+
 		cli.send(*sendFrom, *sendTo, *sendAmount)
 	}
 }

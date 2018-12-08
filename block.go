@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-//Block keeps block headers
+// Block keeps block headers
 type Block struct {
 	Timestamp     int64
 	Transactions  []*Transaction
@@ -43,7 +43,7 @@ func (b *Block) HashTransactions() []byte {
 	return txHash[:]
 }
 
-//NewBlock creates and returns Block
+// NewBlock creates and returns Block
 func NewBlock(transactions []*Transaction, prevBlockHash []byte) *Block {
 	block := &Block{time.Now().Unix(), transactions, prevBlockHash, []byte{}, 0}
 	pow := NewProofOfWork(block)
@@ -55,7 +55,7 @@ func NewBlock(transactions []*Transaction, prevBlockHash []byte) *Block {
 	return block
 }
 
-//NewGenesisBlock creates and returns genesis Block
+// NewGenesisBlock creates and returns genesis Block
 func NewGenesisBlock(coinbase *Transaction) *Block {
 	return NewBlock([]*Transaction{coinbase}, []byte{})
 }
